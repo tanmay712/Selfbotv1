@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>[VOID] DASHBOARD</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<div id="lock" class="lock">
+  <div class="box term">
+<pre class="logo">
+==========================================================
+|  __      __       .__           .___    ______   ____   |
+| /  \    /  \ ____ |__| ____   __| _/   /  __ \ /_   |  |
+| \   \/\/   //  _ \|  |/  _ \ / __ |   \  \/\ \  |   |  |
+|  \        /(  <_> )  (  <_> ) /_/ |   /\  \_/ /  |   |  |
+|   \__/\  /  \____/|  |\____/\____ |   \_____/   |___|  |
+|        \/          \/            \/                    |
+|        ----  S E L F B O T   v 2 . 5  ----             |
+==========================================================
+</pre>
+    <p id="lock-msg">ACCESS KEY:</p>
+    <input id="pw" type="password" placeholder="password / key" />
+    <button id="enter">ENTER THE VOID</button>
+    <div class="muted" id="lock-hint">[?] hosted dash: enter your key from the CLI</div>
+  </div>
+</div>
+
+<div id="app" class="app hidden term">
+  <aside class="sidebar">
+    <pre class="brand">
+ __      __       .__           .___
+/  \    /  \ ____ |__| ____   __| _/
+\   \/\/   //  _ \|  |/  _ \ / __ |
+ \        /(  <_> )  (  <_> ) /_/ |
+  \__/\  /  \____/|  |\____/\____ |
+       \/          \/            \/
+   ----   S E L F B O T  ----
+    </pre>
+    <div id="me" class="me"></div>
+    <nav>
+      <button data-tab="overview" class="active">[1] OVERVIEW</button>
+      <button data-tab="rpc">[2] RPC</button>
+      <button data-tab="presence">[3] PRESENCE</button>
+      <button data-tab="servers">[4] SERVERS</button>
+      <button data-tab="protect">[*] PROTECTION</button>
+      <button data-tab="terminal">[5] TERMINAL</button>
+      <button data-tab="nukes">[6] NUKE PANEL</button>
+      <button data-tab="logs">[7] LOGS</button>
+    </nav>
+    <div class="stats" id="stats"></div>
+    <label class="crt-toggle"><input type="checkbox" id="crt" /> CRT MODE</label>
+    <div class="footer">[VOID] drifting...</div>
+  </aside>
+
+  <main>
+    <section id="overview" class="tab active">
+      <h1>[OVERVIEW]</h1>
+      <div class="bar">+==============================================================+</div>
+      <div id="status-cards" class="cards"></div>
+    </section>
+
+    <section id="rpc" class="tab">
+      <h1>[RPC] RICH PRESENCE</h1>
+      <div class="cards">
+        <div class="card">
+          <pre class="title">+-- CONNECT -------------------------------------+</pre>
+          <label>CLIENT ID</label><input id="rpc-clientid" placeholder="discord app client id" />
+          <div class="row"><button id="rpc-connect">[+] CONNECT</button><button id="rpc-disconnect" class="danger">[X] DISCONNECT</button></div>
+          <div id="rpc-state" class="muted"></div>
+        </div>
+        <div class="card">
+          <pre class="title">+-- ACTIVITY ------------------------------------+</pre>
+          <label>DETAILS</label><input id="rpc-details" placeholder="top line" />
+          <label>STATE</label><input id="rpc-state2" placeholder="bottom line" />
+          <label>LARGE IMAGE KEY</label><input id="rpc-li" placeholder="image key" />
+          <label>LARGE IMAGE TEXT</label><input id="rpc-lt" placeholder="hover text" />
+          <div class="row"><button id="rpc-apply">[+] APPLY</button><button id="rpc-clear" class="ghost">[-] CLEAR</button></div>
+        </div>
+        <div class="card">
+          <pre class="title">+-- BUTTONS (MAX 2) -----------------------------+</pre>
+          <div id="rpc-btns"></div>
+          <button id="rpc-addbtn" class="ghost">[+] ADD BUTTON</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="presence" class="tab">
+      <h1>[PRESENCE]</h1>
+      <div class="cards">
+        <div class="card"><pre class="title">+-- PREFIX --------------------------------------+</pre>
+          <label>PREFIX</label><input id="prefix" /><button id="set-prefix">[+] SAVE</button>
+        </div>
+        <div class="card"><pre class="title">+-- STATUS --------------------------------------+</pre>
+          <label>STATUS</label>
+          <select id="status"><option>online</option><option>idle</option><option>dnd</option><option>invisible</option></select>
+          <button id="set-status">[+] SET</button>
+        </div>
+        <div class="card"><pre class="title">+-- ACTIVITY ------------------------------------+</pre>
+          <label>TYPE</label>
+          <select id="act-type"><option>PLAYING</option><option>STREAMING</option><option>LISTENING</option><option>WATCHING</option><option>COMPETING</option></select>
+          <label>TEXT</label><input id="act-text" placeholder="with the void" />
+          <div class="row"><button id="set-act">[+] SET</button><button id="clear-act" class="ghost">[-] CLEAR</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="servers" class="tab">
+      <h1>[SERVERS]</h1>
+      <div id="guild-list" class="guilds"></div>
+    </section>
+
+    <section id="protect" class="tab">
+      <h1>[PROTECTION] anti-nuke / rate-limit / vanity / selfguard</h1>
+      <div class="cards">
+        <div class="card">
+          <pre class="title">+-- RATE LIMITER --------------------------------+</pre>
+          <div id="rl-stats" class="muted"></div>
+          <div class="row"><button id="rl-slow">[!] SLOW MODE</button><button id="rl-fast" class="ghost">[-] NORMAL</button></div>
+        </div>
+        <div class="card">
+          <pre class="title">+-- ANTI-NUKE -----------------------------------+</pre>
+          <label>SERVER</label><select id="an-guild"></select>
+          <div class="row">
+            <button id="an-on">[+] ARM</button>
+            <button id="an-snapshot">[s] SNAPSHOT</button>
+            <button id="an-rollback" class="danger">[r] ROLLBACK</button>
+            <button id="an-off" class="ghost">[-] DISARM</button>
+          </div>
+          <div id="an-status" class="muted" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <pre class="title">+-- VANITY GUARD --------------------------------+</pre>
+          <label>SERVER</label><select id="vg-guild"></select>
+          <label>VANITY CODE</label><input id="vg-code" placeholder="e.g. myserver" />
+          <div class="row">
+            <button id="vg-on">[+] ARM</button>
+            <button id="vg-off" class="ghost">[-] DISARM</button>
+          </div>
+        </div>
+        <div class="card danger-card">
+          <pre class="title">+-- PANIC ---------------------------------------+</pre>
+          <p class="muted">Instantly go invisible, clear activity, halt all queues, backup DMs.</p>
+          <button id="panic-btn" class="danger">[!!!] PANIC</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="terminal" class="tab">
+      <h1>[TERMINAL] run commands directly</h1>
+      <p class="muted">prefix is auto-added. commands run as YOU in the selected channel.</p>
+      <div class="term-box">
+        <div id="term-out" class="term-out"></div>
+        <div class="term-line">
+          <span class="prompt">void@dash:~$</span>
+          <input id="term-input" placeholder="type a command (e.g. ping) and press enter" autocomplete="off" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label style="margin-right:8px">CHANNEL:</label>
+        <select id="term-ch" style="flex:1"></select>
+      </div>
+    </section>
+
+    <section id="nukes" class="tab">
+      <h1>[NUKE PANEL] destructive commands</h1>
+      <p class="muted">these fire in the selected discord channel as if you typed them yourself.</p>
+      <div class="row" style="margin-bottom:10px">
+        <label style="margin-right:8px">TARGET CH:</label>
+        <select id="nuke-ch" style="flex:1"></select>
+      </div>
+      <div class="grid">
+        <button data-cmd="nuke">NUKE</button>
+        <button data-cmd="banall">BANALL</button>
+        <button data-cmd="kickall">KICKALL</button>
+        <button data-cmd="rolewipe">ROLEWIPE</button>
+        <button data-cmd="emojwipe">EMOJWIPE</button>
+        <button data-cmd="stickerwipe">STICKERWIPE</button>
+        <button data-cmd="channelnuke">CHANNELNUKE</button>
+        <button data-cmd="spamroles 20">SPAMROLES 20</button>
+        <button data-cmd="spamchannels 20">SPAMCHANNELS</button>
+        <button data-cmd="raid 5 consumed">RAID x5</button>
+        <button data-cmd="dmall consumed_by_void">DMALL</button>
+        <button data-cmd="webnuke 1 void">WEBNUKE</button>
+        <button data-cmd="rolelock">ROLELOCK</button>
+        <button data-cmd="auditflood 30">AUDITFLOOD</button>
+        <button data-cmd="timeoutall 10">TIMEOUTALL 10m</button>
+        <button data-cmd="categorykill">CATEGORYKILL</button>
+        <button data-cmd="iconwipe">ICONWIPE</button>
+        <button data-cmd="serverrename">SERVERRENAME</button>
+      </div>
+      <p class="muted">[!] account-terminating if used carelessly.</p>
+    </section>
+
+    <section id="logs" class="tab">
+      <h1>[LOGS] live stream</h1>
+      <pre id="log" class="log"></pre>
+    </section>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
