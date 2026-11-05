@@ -1,4 +1,3 @@
-const { glitchBanner, box } = require('../../src/ascii');
 const { kvBox } = require('../../src/ui');
 module.exports = {
   name: 'dmall',

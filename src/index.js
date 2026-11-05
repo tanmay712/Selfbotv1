@@ -29,6 +29,7 @@ if (!process.env.TOKEN) {
 const client = new Client({ checkUpdate: false, patchVoice: false });
 
 rl.setup(client);
+rl.patchClient(client); // globally chunk+pace all channel.send() calls
 ad.setup(client);
 antinuke.attach(client);
 selfguard.setup(client, config, (reason) => log.err('SELF', `threat triggered: ${reason}`));
