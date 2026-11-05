@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>⬛ VOID — Dashboard</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<div id="lock" class="lock">
+  <div class="box">
+    <pre class="logo">
+██╗   ██╗ ██████╗ ██╗██████╗
+██║   ██║██╔═══██╗██║██╔══██╗
+██║   ██║██║   ██║██║██║  ██║
+╚██╗ ██╔╝██║   ██║██║██║  ██║
+ ╚████╔╝ ╚██████╔╝██║██████╔╝
+  ╚═══╝   ╚═════╝ ╚═╝╚═════╝
+    </pre>
+    <p>Enter VOID access key</p>
+    <input id="pw" type="password" placeholder="password" />
+    <button id="enter">ENTER THE VOID</button>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand">
+      <pre class="logo-mini">
+██╗   ██╗ ██████╗ ██╗██████╗
+██║   ██║██╔═══██╗██║██╔══██╗
+██║   ██║██║   ██║██║██║  ██║
+╚██╗ ██╔╝██║   ██║██║██║  ██║
+ ╚████╔╝ ╚██████╔╝██║██████╔╝
+  ╚═══╝   ╚═════╝ ╚═╝╚═════╝
+      </pre>
+      <div class="tag">SELF BOT v2.0</div>
+    </div>
+    <div id="me" class="me"></div>
+    <nav>
+      <button data-tab="overview" class="active">⬛ Overview</button>
+      <button data-tab="rpc">🌀 RPC</button>
+      <button data-tab="presence">🟣 Presence</button>
+      <button data-tab="guilds">🏚 Servers</button>
+      <button data-tab="logs">📜 Logs</button>
+      <button data-tab="quick">⚡ Quick Actions</button>
+    </nav>
+    <div class="stats" id="stats"></div>
+    <div class="footer">Drifting through the void...</div>
+  </aside>
+
+  <main>
+    <section id="overview" class="tab active">
+      <h1>⬛ Overview</h1>
+      <div id="status-cards" class="cards"></div>
+    </section>
+
+    <section id="rpc" class="tab">
+      <h1>🌀 Rich Presence (RPC)</h1>
+      <div class="cards">
+        <div class="card">
+          <label>Client ID</label>
+          <input id="rpc-clientid" placeholder="Discord App Client ID" />
+          <div class="row">
+            <button id="rpc-connect">Connect</button>
+            <button id="rpc-disconnect" class="danger">Disconnect</button>
+          </div>
+          <div id="rpc-state" class="muted"></div>
+        </div>
+        <div class="card">
+          <label>Details</label>
+          <input id="rpc-details" placeholder="Top line" />
+          <label>State</label>
+          <input id="rpc-state2" placeholder="Bottom line" />
+          <label>Large Image Key</label>
+          <input id="rpc-li" placeholder="upload key e.g. void" />
+          <label>Large Image Text</label>
+          <input id="rpc-lt" placeholder="hover text" />
+          <div class="row">
+            <button id="rpc-apply">Apply</button>
+            <button id="rpc-clear" class="ghost">Clear</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Buttons (max 2)</h3>
+          <div id="rpc-btns"></div>
+          <button id="rpc-addbtn" class="ghost">+ Add Button</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="presence" class="tab">
+      <h1>🟣 Presence</h1>
+      <div class="cards">
+        <div class="card">
+          <label>Prefix</label>
+          <input id="prefix" />
+          <button id="set-prefix">Save</button>
+        </div>
+        <div class="card">
+          <label>Status</label>
+          <select id="status">
+            <option value="online">online</option>
+            <option value="idle">idle</option>
+            <option value="dnd">dnd</option>
+            <option value="invisible">invisible</option>
+          </select>
+          <button id="set-status">Set</button>
+        </div>
+        <div class="card">
+          <label>Activity Type</label>
+          <select id="act-type">
+            <option>PLAYING</option><option>STREAMING</option>
+            <option>LISTENING</option><option>WATCHING</option><option>COMPETING</option>
+          </select>
+          <label>Text</label>
+          <input id="act-text" placeholder="with the void" />
+          <div class="row">
+            <button id="set-act">Set Activity</button>
+            <button id="clear-act" class="ghost">Clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="guilds" class="tab">
+      <h1>🏚 Servers</h1>
+      <div id="guild-list" class="guilds"></div>
+    </section>
+
+    <section id="logs" class="tab">
+      <h1>📜 Live Logs</h1>
+      <pre id="log" class="log"></pre>
+    </section>
+
+    <section id="quick" class="tab">
+      <h1>⚡ Quick Actions</h1>
+      <p class="muted">Destructive actions — use with care.</p>
+      <div class="cards">
+        <div class="card">
+          <h3>Nickname</h3>
+          <select id="nick-guild"></select>
+          <input id="nick-name" placeholder="new nickname" />
+          <button id="set-nick">Set</button>
+        </div>
+        <div class="card danger-card">
+          <h3>⚠️ Red buttons</h3>
+          <p class="muted">These run nukes — only in the server you send the command in. Open Discord and use the commands there.</p>
+          <ul class="cmdlist">
+            <li><code>;nuke</code> clone-delete all channels &amp; rebuild</li>
+            <li><code>;banall</code> ban everyone</li>
+            <li><code>;kickall</code> kick everyone</li>
+            <li><code>;rolewipe</code> delete all roles</li>
+            <li><code>;emojwipe</code> delete all emojis</li>
+            <li><code>;raid &lt;n&gt; &lt;msg&gt;</code> spam all channels</li>
+            <li><code>;dmall &lt;msg&gt;</code> DM everyone</li>
+            <li><code>;spamchannels &lt;n&gt;</code> spam-create channels</li>
+            <li><code>;spamroles &lt;n&gt;</code> spam-create roles</li>
+            <li><code>;timeoutall &lt;mins&gt;</code> timeout everyone</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>
