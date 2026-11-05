@@ -1,7 +1,8 @@
+const { box } = require('../../src/ui');
 module.exports = {
   name: 'purge',
   aliases: ['prune','clear'],
-  description: 'Delete recent messages in this channel (up to 100).',
+  description: 'Delete up to 100 recent messages.',
   category: 'nukes',
   usage: '<count>',
   async execute(message, args) {

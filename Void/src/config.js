@@ -1,4 +1,4 @@
-// ⬛ VOID config loader
+// [VOID] config loader
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
@@ -7,22 +7,26 @@ const CONFIG_PATH = path.join(__dirname, '..', 'config.json');
 
 const defaults = {
   prefix: ';',
-  status: 'idle', // online / idle / dnd / invisible
+  status: 'idle',
   rpc: {
     enabled: false,
     clientId: '123456789012345678',
-    details: 'Drifting through the void',
-    state: 'Nothingness',
+    details: 'drifting through the void',
+    state: 'nothingness',
     largeImage: 'void',
     largeText: 'VOID',
     smallImage: '',
     smallText: '',
-    buttons: [{ label: 'GitHub', url: 'https://github.com/' }],
+    buttons: [{ label: 'github', url: 'https://github.com/' }],
+    rotate: { enabled: false, lines: [], intervalSec: 15, idx: 0 },
   },
+  statusGlitch: { enabled: false, intervalSec: 3 },
   autoReact: { enabled: false, triggers: [] },
-  autoReply: { enabled: false, dms: true, mentions: true, message: 'I am currently away. — VOID' },
-  antiKick: { enabled: false },
-  selfRoles: { enabled: false },
+  autoReply: { enabled: false, dms: true, mentions: true, message: '[VOID] away.' },
+  keywordReply: { enabled: false, triggers: [] },
+  ghostType: { enabled: false, channelId: null },
+  mirror: { enabled: false, targetId: null },
+  serverLog: { enabled: false, guildId: null, file: null, channelId: null },
   themes: { accent: '#8a2be2', secondary: '#00d4ff' },
 };
 
@@ -37,7 +41,7 @@ function load() {
       save();
     }
   } catch (e) {
-    console.error('Config load failed, using defaults:', e.message);
+    console.error('[X] Config load failed, using defaults:', e.message);
   }
   return cfg;
 }

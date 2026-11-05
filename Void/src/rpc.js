@@ -1,4 +1,4 @@
-// ⬛ VOID Rich Presence controller (Discord Rich Presence via discord-rpc)
+// [VOID] Rich Presence controller
 const RPC = require('discord-rpc');
 const log = require('./logger');
 
@@ -13,13 +13,13 @@ async function connect(clientId) {
     rpc = new RPC.Client({ transport: 'ipc' });
     rpc.on('ready', () => {
       connected = true;
-      log.ok('RPC', `Connected to Discord RPC | Client ID: ${clientId}`);
+      log.ok('RPC', `connected | client ${clientId}`);
       if (current) setActivity(current, false);
     });
     rpc.on('disconnected', () => { connected = false; });
-    await rpc.login({ clientId }).catch(e => { log.warn('RPC', 'Login failed: ' + e.message); connected = false; });
+    await rpc.login({ clientId }).catch(e => { log.warn('RPC', 'login failed: ' + e.message); connected = false; });
   } catch (e) {
-    log.warn('RPC', 'Could not start RPC: ' + e.message);
+    log.warn('RPC', 'could not start RPC: ' + e.message);
     connected = false;
   }
 }
@@ -33,13 +33,13 @@ function disconnect() {
 async function setActivity(act, announce = true) {
   current = act;
   if (!rpc || !connected) {
-    if (announce) log.warn('RPC', 'RPC not connected — activity queued');
+    if (announce) log.warn('RPC', 'not connected - activity queued');
     return false;
   }
   try {
     await rpc.setActivity({
-      details: act.details || 'Drifting through the void',
-      state: act.state || 'Nothingness',
+      details: act.details || 'drifting through the void',
+      state: act.state || 'nothingness',
       startTimestamp: act.startTimestamp || Date.now(),
       largeImageKey: act.largeImage || 'void',
       largeImageText: act.largeText || 'VOID',
@@ -48,7 +48,7 @@ async function setActivity(act, announce = true) {
       buttons: (act.buttons || []).filter(b => b && b.label && b.url).slice(0, 2),
       instance: false,
     });
-    if (announce) log.ok('RPC', 'Activity updated');
+    if (announce) log.ok('RPC', 'activity updated');
     return true;
   } catch (e) {
     log.err('RPC', e);
@@ -58,9 +58,7 @@ async function setActivity(act, announce = true) {
 
 function clearActivity() {
   current = null;
-  if (rpc && connected) {
-    try { rpc.clearActivity(); } catch (_) {}
-  }
+  if (rpc && connected) { try { rpc.clearActivity(); } catch (_) {} }
 }
 
 function getState() { return { connected, current }; }
