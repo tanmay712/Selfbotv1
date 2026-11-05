@@ -1,0 +1,41 @@
+{
+  "active": false,
+  "triggers": [
+    {
+      "keyword": "cool",
+      "emojis": [
+        "😎"
+      ]
+    },
+    {
+      "keyword": "fire",
+      "emojis": [
+        "🔥"
+      ]
+    },
+    {
+      "keyword": "madmax",
+      "emojis": [
+        "🤢"
+      ]
+    },
+    {
+      "keyword": "daaku",
+      "emojis": [
+        "🍌"
+      ]
+    },
+    {
+      "keyword": "fuck",
+      "emojis": [
+        "🖕🏻📴"
+      ]
+    },
+    {
+      "keyword": "bonda",
+      "emojis": [
+        "🍑"
+      ]
+    }
+  ]
+}
