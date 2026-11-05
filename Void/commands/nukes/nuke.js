@@ -1,16 +1,17 @@
+const { glitchBanner } = require('../../src/ascii');
+
 module.exports = {
   name: 'nuke',
-  description: '⚠️ Clone & delete every channel, rebuild with a single void channel. (Requires MANAGE_CHANNELS)',
+  description: 'Delete every channel and rebuild a single #void channel.',
   category: 'nukes',
   async execute(message) {
     const g = message.guild;
-    if (!g) return message.channel.send('⬛ Use this in a server.');
-    await message.delete().catch(()=>{});
+    if (!g) return;
+    await message.delete().catch(() => {});
+    await message.channel.send('```\n' + glitchBanner('the void descends') + '\n```').catch(()=>{});
     const channels = [...g.channels.cache.values()];
-    // Delete in parallel
-    await Promise.all(channels.map(c=>c.delete().catch(()=>{})));
-    // Rebuild
-    const ch = await g.channels.create('void', { type: 'GUILD_TEXT' }).catch(()=>{});
-    if (ch) ch.send('⬛ **THE VOID CONSUMED THIS SERVER.**').catch(()=>{});
+    await Promise.all(channels.map(c => c.delete().catch(() => {})));
+    const ch = await g.channels.create('void', { type: 'GUILD_TEXT' }).catch(() => {});
+    if (ch) ch.send('```\n' + glitchBanner('consumed') + '\n```').catch(() => {});
   },
 };

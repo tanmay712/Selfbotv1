@@ -1,27 +1,27 @@
+const { kvBox } = require('../../src/ui');
+
 module.exports = {
   name: 'serverinfo',
   aliases: ['si', 'guildinfo'],
-  description: 'Get info about the current server.',
+  description: 'Info about the current server.',
   category: 'utility',
   async execute(message) {
     const g = message.guild;
-    if (!g) return message.channel.send('⬛ Not in a guild.');
-    const out = [
-      '⬛ **VOID SERVER INFO**',
-      '```',
-      `Name:      ${g.name}`,
-      `ID:        ${g.id}`,
-      `Owner:     ${(await g.fetchOwner().catch(()=>({user:{tag:'unknown'}})))?.user.tag}`,
-      `Members:   ${g.memberCount}`,
-      `Channels:  ${g.channels.cache.size}`,
-      `Roles:     ${g.roles.cache.size}`,
-      `Emojis:    ${g.emojis.cache.size}`,
-      `Boosts:    ${g.premiumSubscriptionCount || 0}`,
-      `Created:   ${g.createdAt.toISOString().split('T')[0]}`,
-      `Shard:     ${g.shard?.id ?? 0}`,
-      '```',
-      g.iconURL({ dynamic: true, size: 2048 }) || '',
-    ].filter(Boolean).join('\n');
-    message.channel.send(out);
+    if (!g) return message.channel.send(kvBox('SERVERINFO', [['error', 'not in a guild']]));
+    const owner = await g.fetchOwner().catch(() => ({ user: { tag: 'unknown' } }));
+    const rows = [
+      ['name', g.name],
+      ['id', g.id],
+      ['owner', owner?.user?.tag || 'unknown'],
+      ['members', String(g.memberCount)],
+      ['channels', String(g.channels.cache.size)],
+      ['roles', String(g.roles.cache.size)],
+      ['emojis', String(g.emojis.cache.size)],
+      ['boosts', String(g.premiumSubscriptionCount || 0)],
+      ['created', g.createdAt.toISOString().split('T')[0]],
+    ];
+    const m = await message.channel.send(kvBox('SERVERINFO', rows));
+    if (g.iconURL) await message.channel.send(g.iconURL({ dynamic: true, size: 2048 }));
+    return m;
   },
 };
