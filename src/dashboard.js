@@ -106,6 +106,9 @@ function start(client) {
     sendJson(res, 200, log.ring());
   }));
 
+  // Un-authenticated ping so the frontend can probe if a local API is alive without auth.
+  app.get('/api/ping', (req, res) => sendJson(res, 200, { ok: true, local: true, t: Date.now() }));
+
   // Build a Collection-shaped stub for mentions in synthetic messages.
   function fakeMentions(initialUsers = [], initialChannels = []) {
     const coll = new Collection();
