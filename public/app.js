@@ -62,10 +62,17 @@ function tryLocal() {
   WS = new WebSocket(`${proto}://${location.host}/ws?pw=${encodeURIComponent(PW)}`);
   WS.onopen = () => { mode='local'; relayLoop && clearTimeout(pollTimer); clearLog(); };
   WS.onmessage = (ev) => {
-    const m = JSON.parse(ev.data);
-    if (m.type==='state') renderState(m.state);
-    else if (m.type==='log') appendLog(m.entry);
-    else if (m.type==='logs') { $('#log').innerHTML=''; m.logs.forEach(appendLog); }
+    let m;
+    try { m = JSON.parse(ev.data); } catch(e) {
+      console.warn('[VOID] non-JSON ws frame:', ev.data.slice(0,200));
+      try { termPrint('[!] bad ws frame (non-JSON): '+String(ev.data).slice(0,120), 'warn'); } catch(_){}
+      return;
+    }
+    try {
+      if (m.type==='state') renderState(m.state);
+      else if (m.type==='log') appendLog(m.entry);
+      else if (m.type==='logs') { $('#log').innerHTML=''; (m.logs||[]).forEach(appendLog); }
+    } catch(e) { console.error('[VOID] ws handler:', e); }
   };
   WS.onclose = () => {
     if (HOSTED) { mode='hosted'; relayLoop(); }
@@ -214,9 +221,23 @@ function initUI() {
 
 function apiLocal(path, body) {
   const pw = PW;
-  fetch(path+(path.includes('?')?'&':'?')+'pw='+encodeURIComponent(pw), {
+  const url = path+(path.includes('?')?'&':'?')+'pw='+encodeURIComponent(pw);
+  return fetch(url, {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{})
-  }).then(r=>r.json()).catch(()=>{});
+  }).then(async r => {
+    const ct = r.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {
+      const txt = await r.text().catch(()=>'');
+      throw new Error('non-JSON response ('+r.status+'): '+txt.slice(0,200));
+    }
+    const j = await r.json();
+    if (j && j.ok === false) throw new Error(j.error || 'request failed');
+    return j;
+  }).catch(e => {
+    console.error('[VOID] apiLocal', path, e);
+    try { termPrint('[X] '+path+': '+e.message, 'err'); } catch(_){}
+    throw e;
+  });
 }
 
 function cmdToGuild(cmdText, selectId) {
