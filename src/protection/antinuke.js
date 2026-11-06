@@ -7,8 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const log = require('../logger');
-
-const DATA_DIR = path.join(__dirname, '..', '..', 'data');
+const { setVanityCode, fetchVanity } = require('../rest-helpers');const DATA_DIR = path.join(__dirname, '..', '..', 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const state = {}; // guildId -> { snapshots, eventLog, config }
@@ -159,12 +158,17 @@ async function checkVanity(client, guildId) {
   const g = client.guilds.cache.get(guildId);
   if (!g) return;
   try {
-    await g.fetchVanityData().catch(()=>null);
-    if (g.vanityURLCode !== s.config.vanityCode) {
-      log.warn('ANTINUKE', `vanity changed ${s.config.vanityCode} -> ${g.vanityURLCode}, attempting restore`);
-      await g.setVanityCode(s.config.vanityCode).catch(e=>log.err('ANTINUKE','vanity restore: '+e.message));
+    // Try lib fetch first, then REST fallback.
+    let cur = null;
+    try { const v = await g.fetchVanityData().catch(()=>null); cur = v?.code ?? null; } catch {}
+    if (!cur) { const r = await fetchVanity(client, guildId); if (r.ok) cur = r.code; }
+    if (cur && cur !== s.config.vanityCode) {
+      log.warn('ANTINUKE', `vanity changed ${s.config.vanityCode} -> ${cur}, attempting restore`);
+      const r = await setVanityCode(client, guildId, s.config.vanityCode);
+      if (!r.ok) log.err('ANTINUKE', 'vanity restore failed: '+r.error);
+      else log.ok('ANTINUKE', 'vanity restored to '+s.config.vanityCode);
     }
-  } catch {}
+  } catch (e) { log.err('ANTINUKE', 'vanity check: '+e.message); }
 }
 
 function attach(client) {
