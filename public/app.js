@@ -1,38 +1,41 @@
-// [VOID] Dashboard front-end - works both locally (direct WS) and hosted (relay key)
+// [VOID] Dashboard front-end - works both locally (direct WS/HTTP) and hosted (relay key).
+// Connection strategy:
+//   1. If ?key= is in the URL (or a saved key exists AND local probe fails), use hosted/relay mode.
+//   2. Otherwise, always TRY local WS first (works on localhost, LAN IPs, Codespaces, ngrok, any port forward).
+//   3. If local WS fails AND no key, retry local; if a key IS present, fall back to hosted relay.
 const $ = s => document.querySelector(s);
 const $$ = s => document.querySelectorAll(s);
 
 const urlPw = new URLSearchParams(location.search).get('pw') || localStorage.getItem('void_pw') || '';
 const urlKey = new URLSearchParams(location.search).get('key') || localStorage.getItem('void_key') || '';
 
-// hosted mode detection: if page is served from a non-localhost host and no local ws succeeds, use relay
-const HOSTED = !['localhost','127.0.0.1'].includes(location.hostname);
-let mode = HOSTED ? 'hosted' : 'local';
+let mode = 'local';   // 'local' | 'hosted' | 'connecting'
 let KEY = urlKey;
 let PW  = urlPw || 'void';
+let localTried = false;
+let localFailCount = 0;
 
-// boot flow: lock -> key entry -> app
 const lock = $('#lock');
 const app  = $('#app');
 
-$('#pw').value = PW;
-$('#enter').onclick = enterKey;
-$('#pw').addEventListener('keydown', e => { if(e.key==='Enter') enterKey(); });
-
-// If we are on hosted Vercel site, show a different lock asking for key
-if (HOSTED && !KEY) {
+$('#pw').value = KEY ? KEY : PW;
+if (urlKey) {
+  // Explicit ?key= → hosted mode, ask for key
   lock.querySelector('.box p').textContent = 'ENTER YOUR VOID ACCESS KEY:';
   $('#pw').type = 'text'; $('#pw').placeholder = 'the key printed when you run npm start';
   $('#enter').textContent = 'CONNECT';
-} else if (KEY) {
-  // skip lock if we have key/pw
-  bootApp();
 }
+
+$('#enter').onclick = enterKey;
+$('#pw').addEventListener('keydown', e => { if(e.key==='Enter') enterKey(); });
 
 function enterKey() {
   const v = $('#pw').value.trim();
-  if (HOSTED) { KEY = v; localStorage.setItem('void_key', KEY); PW = 'void'; }
-  else { PW = v; localStorage.setItem('void_pw', PW); }
+  if (KEY || urlKey || (mode === 'hosted')) {
+    KEY = v; localStorage.setItem('void_key', KEY); PW = 'void'; mode = 'hosted';
+  } else {
+    PW = v; localStorage.setItem('void_pw', PW); mode = 'local';
+  }
   bootApp();
 }
 
@@ -47,25 +50,35 @@ function bootApp() {
 }
 
 function connectAndLoop() {
-  if (mode === 'local') {
-    tryLocal();
-  } else {
-    // hosted relay mode
+  if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  if (mode === 'hosted' && KEY) {
     relayLoop();
+  } else {
+    // Always try local first. If a key was provided, fall back to relay after a few failures.
+    mode = 'local';
+    tryLocal();
   }
 }
 
-// ---------- LOCAL MODE (direct WS to localhost:port) ----------
+// ---------- LOCAL MODE (direct WS to same host:port) ----------
 let WS = null;
+let wsRetry = null;
 function tryLocal() {
-  const proto = location.protocol==='https:' ? 'wss' : 'ws';
+  if (WS) { try { WS.close(); } catch(_){} WS = null; }
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   WS = new WebSocket(`${proto}://${location.host}/ws?pw=${encodeURIComponent(PW)}`);
-  WS.onopen = () => { mode='local'; relayLoop && clearTimeout(pollTimer); clearLog(); };
+  localTried = true;
+  WS.onopen = () => {
+    mode = 'local';
+    localFailCount = 0;
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+    clearLog();
+  };
   WS.onmessage = (ev) => {
     let m;
     try { m = JSON.parse(ev.data); } catch(e) {
       console.warn('[VOID] non-JSON ws frame:', ev.data.slice(0,200));
-      try { termPrint('[!] bad ws frame (non-JSON): '+String(ev.data).slice(0,120), 'warn'); } catch(_){}
+      try { termPrint('[!] bad ws frame: '+String(ev.data).slice(0,120), 'warn'); } catch(_){}
       return;
     }
     try {
@@ -75,10 +88,17 @@ function tryLocal() {
     } catch(e) { console.error('[VOID] ws handler:', e); }
   };
   WS.onclose = () => {
-    if (HOSTED) { mode='hosted'; relayLoop(); }
-    else setTimeout(tryLocal, 2000);
+    WS = null;
+    // If a hosted/relay KEY exists and we've failed a couple of times, fall back.
+    if (KEY && localFailCount >= 2) {
+      mode = 'hosted';
+      relayLoop();
+      return;
+    }
+    localFailCount++;
+    wsRetry = setTimeout(tryLocal, 2000);
   };
-  WS.onerror = () => { try { WS.close(); } catch(_){} };
+  WS.onerror = () => { try { WS && WS.close(); } catch(_){} };
 }
 
 function localSend(obj) {
@@ -91,8 +111,13 @@ async function relayCall(path, data, method='GET') {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ key: KEY, path, method, data })
   });
-  const j = await r.json().catch(()=>({ok:false,error:'bad json'}));
-  if (!j.ok) throw new Error(j.error || 'request failed');
+  const ct = r.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const txt = await r.text().catch(()=>'');
+    throw new Error(`relay ${path} -> HTTP ${r.status} (non-JSON): ${txt.slice(0,160)}`);
+  }
+  const j = await r.json().catch(()=>({ok:false,error:'bad json from relay'}));
+  if (!j.ok) throw new Error(j.error || `relay ${path} -> ${r.status}`);
   return j.data;
 }
 
